@@ -105,5 +105,7 @@ interfacing.  That would also allow other cloud providers to be added.
 
 The system as a whole needs to be more configurable.
 
+We need image management, at a minimum to clear out old snapshots.
+
 [Personal Access Token]: https://cloud.digitalocean.com/settings/applications
 [MCRcon]: https://github.com/barneygale/MCRcon
