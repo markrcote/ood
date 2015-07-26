@@ -1,2 +1,3 @@
+celery
 paramiko
 python-digitalocean

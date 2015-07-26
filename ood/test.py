@@ -11,5 +11,4 @@ from ood.droplet import DropletController
 
 
 def new():
-    return DropletController('~/.ood/droplet_key', '~/.ood/ssh_key',
-                             '~/.ood/rcon_pw')
+    return DropletController()

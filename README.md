@@ -120,6 +120,45 @@ makes state-dependent timeouts more important.
 Starting to wonder if I really should take mozpool's
 complex-yet-straightforward [state machine code][]...
 
+*Later that day...*
+
+I've now got a Celery app with tasks `update_state()`, `start()`, and
+`stop()`.   It updates the state every minute, which is probably too long in
+some cases to see all the state transitions.
+
+To start the worker:
+
+    celery -A ood worker -l info -B
+
+Then in a Python interpreter you can start up the process:
+
+    >>> from ood.tasks import start
+    >>> start.delay()
+
+The Minecraft server's IP and port are logged and also writted to
+~/.ood/minecraft_address.
+
+After 15 minutes (by default) without a player, the next worker call
+to `update_state()` will begin the shutdown and archiving procedures.
+You can also manually shut it down with
+
+   >>> from ood.tasks import stop
+   >>> stop.delay()
+
+I had to quickly remove all state from DropletController.  It's super
+ugly right now because I stashed things into temporary files (and in a
+different way from the pre-existing `state` file).  This stuff should
+probably all go into a database.  Since the web app will probably be
+Django-based, I'll move the state variables to the Django-app db later.
+
+I still need to test interrupting the worker while it is in the middle
+of all the different states to make sure it picks up the state
+metadata correctly.  Probably need real tests in general.
+
+A good test of the state machine, once it is separated from the
+Droplet interfacing details, would be to run Minecraft in a local
+docker instance.
+
 ## Crazy Ideas
 
 Thanks to [quarry][], it should be possible to make a very simple
