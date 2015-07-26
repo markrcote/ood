@@ -136,16 +136,17 @@ Then in a Python interpreter you can start up the process:
     >>> start.delay()
 
 The Minecraft server's IP and port are logged and also writted to
-~/.ood/minecraft_address.
+`~/.ood/minecraft_address`.
 
 After 15 minutes (by default) without a player, the next worker call
 to `update_state()` will begin the shutdown and archiving procedures.
 You can also manually shut it down with
 
-   >>> from ood.tasks import stop
-   >>> stop.delay()
+    >>> from ood.tasks import stop
+    >>> stop.delay()
 
-I had to quickly remove all state from DropletController.  It's super
+I had to quickly make all state DropletController persistent, since
+an instance is freshly created at the beginning of each task.  It's super
 ugly right now because I stashed things into temporary files (and in a
 different way from the pre-existing `state` file).  This stuff should
 probably all go into a database.  Since the web app will probably be
@@ -155,8 +156,8 @@ I still need to test interrupting the worker while it is in the middle
 of all the different states to make sure it picks up the state
 metadata correctly.  Probably need real tests in general.
 
-A good test of the state machine, once it is separated from the
-Droplet interfacing details, would be to run Minecraft in a local
+A good test of the state machine, at least, once it is separated from
+the Droplet interfacing details, would be to run Minecraft in a local
 docker instance.
 
 ## Crazy Ideas
