@@ -110,6 +110,16 @@ service can be gracefully restarted.
 
 We need image management, at a minimum to clear out old snapshots.
 
+### 2015/07/26
+
+Playing with [Celery][], which looks like the best way to run
+DropletController.  We can have a scheduled task that calls
+DropletController.update_state() periodically, although this probably
+makes state-dependent timeouts more important.
+
+Starting to wonder if I really should take mozpool's
+complex-yet-straightforward [state machine code][]...
+
 ## Crazy Ideas
 
 Thanks to [quarry][], it should be possible to make a very simple
@@ -136,3 +146,4 @@ since copying text from the Minecraft server list seems to be disabled.
 [Personal Access Token]: https://cloud.digitalocean.com/settings/applications
 [MCRcon]: https://github.com/barneygale/MCRcon
 [quarry]: https://github.com/barneygale/quarry
+[state machine code]: https://github.com/djmitche/mozpool/blob/master/mozpool/statemachine.py
