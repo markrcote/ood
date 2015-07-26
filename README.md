@@ -105,7 +105,34 @@ interfacing.  That would also allow other cloud providers to be added.
 
 The system as a whole needs to be more configurable.
 
+State variables should be moved from memory to a database so the
+service can be gracefully restarted.
+
 We need image management, at a minimum to clear out old snapshots.
+
+## Crazy Ideas
+
+Thanks to [quarry][], it should be possible to make a very simple
+server that speaks enough of the Minecraft protocol to dispense with
+the web app.  A separate service could display the current status of
+the host (including if it's down).  Trying to log into the service
+would start up the real host; when booted, the IP would be published
+in the OoD's fake server.
+
+Even better, we could dynamically update DNS so the user wouldn't have
+to copy the IP address.  The utility of this feature would depend on
+the time to update.
+
+Craziest still, we could try just one DNS entry for both the OoD fake
+server and the Minecraft droplet.  I have a feeling this wouldn't work
+without restarting Minecraft, though, unless there's no IP caching
+going on anywhere.  Two DNS entries maybe the best solution here.
+
+It might be worth investigating this before even embarking on a web
+server.  The critical element will be DNS update time; if we have to
+copy & paste IP addresses, it's probably preferable to use a web app,
+since copying text from the Minecraft server list seems to be disabled.
 
 [Personal Access Token]: https://cloud.digitalocean.com/settings/applications
 [MCRcon]: https://github.com/barneygale/MCRcon
+[quarry]: https://github.com/barneygale/quarry
