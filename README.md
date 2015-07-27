@@ -64,7 +64,7 @@ You can also manually shut it down with
     >>> from ood.tasks import stop
     >>> stop.delay()
 
-I had to quickly make all state DropletController persistent, since
+I had to quickly make all DropletController state persistent, since
 an instance is freshly created at the beginning of each task.  It's super
 ugly right now because I stashed things into temporary files (and in a
 different way from the pre-existing `state` file).  This stuff should
