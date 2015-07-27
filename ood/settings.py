@@ -4,6 +4,9 @@ from datetime import timedelta
 
 # All settings here are trumped by settings_local.py, which is imported last.
 
+# In particular, overload this one.
+SECRET_KEY = 'Bah2aeshiem2ahB6HahH1phie0einie3Eapheem4nae2een8oo'
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
@@ -83,14 +86,18 @@ CELERY_TIMEZONE = 'America/Montreal'
 
 # Local settings trump any above.
 
-from settings_local import *
+try:
+    from settings_local import *
+except ImportError:
+    pass
 
 CELERYBEAT_SCHEDULE = {
     'update-state': {
         'task': 'ood.tasks.update_state',
         # TODO: The schedule should be frequent, but
         # DropletController.update_state() should be smarter about
-        # timeouts.
+        # timeouts.  Right now that can be controlled for testing by setting
+        # UPDATE_STATE_PERIOD_SECONDS to a small value in settings_local.py.
         'schedule': timedelta(seconds=UPDATE_STATE_PERIOD_SECONDS),
     },
 }

@@ -111,6 +111,12 @@ Celery tasks.  It's pretty messy, but the data is pretty small right
 now so there's huge no problems.  It should still all be separated out
 for sanity.
 
+I got rid of DropletController.wait_for_state() and test.py since the
+Celery stuff has obsoleted that.
+
+For testing, setting `settings_local.UPDATE_STATE_PERIOD_SECONDS` to a
+small number is very helpful.
+
 ### 2015/07/26
 
 I have the core host controller working, although it needs something to drive
