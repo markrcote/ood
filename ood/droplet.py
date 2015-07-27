@@ -54,6 +54,12 @@ class DropletController(object):
     tendency to drift.  Not a huge deal, but ugly.
 
     TODO: Locks around actions.
+
+    TODO: Analyze consistency.  Instantiations of this class are meant to be
+    short lived, so grabbing all external data upon creation is more
+    consistent, if potentially out of date (we do not do this right now, but
+    probably should).  However inconsistencies are still possible; need to
+    map all combinations.
     """
 
     def __init__(self, data_dir=DEFAULT_DATA_DIR):
@@ -225,6 +231,7 @@ class DropletController(object):
 
     @property
     def droplet_ip(self):
+        # TODO: Should maybe refresh droplet here.  Dependencies are unclear.
         if self.droplet is None:
             return None
 
