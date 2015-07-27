@@ -128,6 +128,11 @@ class DropletController(object):
         self._set_state(STATE_STOPPING)
 
     def update_state(self):
+        # TODO: The state transitions really should be encapsulated better.
+        # It should be more obvious to what states and how a state can
+        # transition.  The following rules are hard to understand and hence
+        # fragile.  See mozpool for inspiration.
+        #
         # TODO: States should have their own timeouts.
         self._refresh_droplet()
 
