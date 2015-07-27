@@ -1,3 +1,5 @@
 celery
+django
+MySQL-python
 paramiko
 python-digitalocean

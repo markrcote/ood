@@ -79,6 +79,38 @@ A good test of the state machine, at least, once it is separated from
 the Droplet interfacing details, would be to run Minecraft in a local
 docker instance.
 
+*Later still...*
+
+Started building the web app in Django.  I've started and worked on a
+number of Django projects, but I always seem to have to go back to the
+tutorial for the first few steps.  And after that I feel like I'm
+reinventing processes to get convenient dev and prod
+environments...
+
+Anyway I have it now set up to use a local MySQL database named `ood`
+with the user named `ood` and no password.  This is the MySQL that'll
+do that (as root or other privileged user):
+
+    mysql> create database ood;
+    Query OK, 1 row affected (0.00 sec)
+
+    mysql> grant all on ood.* to 'ood'@'localhost';
+    Query OK, 0 rows affected (0.00 sec)
+
+    mysql> flush privileges;
+    Query OK, 0 rows affected (0.00 sec)
+
+I've seen a lot of setups use a placeholder password, but I don't see
+the point, particularly if you restrict the user to localhost.
+
+*And yet later...*
+
+All the state metadata is now in a Django model.  The Django app
+doesn't do anything yet, but it now has a shared data model with the
+Celery tasks.  It's pretty messy, but the data is pretty small right
+now so there's huge no problems.  It should still all be separated out
+for sanity.
+
 ### 2015/07/26
 
 I have the core host controller working, although it needs something to drive

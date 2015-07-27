@@ -1,15 +1,18 @@
 import errno
-import json
 import logging
 import os
 import re
 import socket
 import time
+from datetime import timedelta
 from operator import attrgetter
 
 import digitalocean
+from django.utils import timezone
 from mcrcon import MCRcon
 from paramiko.client import AutoAddPolicy, SSHClient
+
+from ood.models import ServerState
 
 
 DROPLET_NAME = 'ood'
@@ -30,7 +33,7 @@ STATE_DESTROYING = 'destroying'
 STATE_UNKNOWN = 'unknown'
 
 NUM_PLAYERS_RE = re.compile('There are (\d+)/\d+ players')
-MAX_SECONDS_NO_PLAYERS = 15*60
+MAX_TIMEDELTA_NO_PLAYERS = timedelta(minutes=15)
 
 DEFAULT_DATA_DIR = os.path.join(os.getenv('HOME'), '.ood')
 DROPLET_KEY_FILENAME = 'droplet_key'
@@ -44,9 +47,12 @@ class DropletController(object):
     Requires an existing snapshot of the form 'ood-<timestamp>'.
 
     TODO: Split this into at least two classes, one for interfacing with
-    the DO API/server/game, and one for the state machine.
+    the DO API/server/game, and one for the state machine.  There is way too
+    much smushed together here.
+
     TODO: Timeouts aren't handled very well in a few places; they have a
     tendency to drift.  Not a huge deal, but ugly.
+
     TODO: Locks around actions.
     """
 
@@ -60,23 +66,13 @@ class DropletController(object):
                                          DROPLET_ROOT_SSH_KEY_FILENAME)
         self.rcon_pw_path = os.path.join(self.data_dir, RCON_PW_FILENAME)
 
-        # TODO: This is all horrible and needs to be put into a database.
-        self.state_path = os.path.join(self.data_dir, 'state')
-        self.last_time_seen_player_path = os.path.join(self.data_dir,
-                                                       'last_time_seen_player')
-        self._last_time_seen_player = None
-
-        self.snapshot_action_id_path = os.path.join(self.data_dir,
-                                                    'snapshot_action_id')
-        self._snapshot_action_id = None
         self._snapshot_action = None
-        self.state = None
 
-        if os.path.exists(self.state_path):
-            self._set_state(file(self.state_path).read().strip())
-        else:
+        self._refresh_state()
+        self._refresh_droplet()
+
+        if self.ss.state is None:
             logging.info('No saved state; trying to guess.')
-            self._set_droplet()
 
             self._set_state(STATE_ARCHIVED)
             if self.droplet:
@@ -87,11 +83,19 @@ class DropletController(object):
                 self.update_state()
             else:
                 logging.info('Droplet is not running.')
+        else:
+            logging.info('Starting up in state %s.' % self.ss.state)
+            if self.ss.state == STATE_RUNNING:
+                logging.info('Minecraft is running on %s:%d' %
+                             (self.droplet_ip, MINECRAFT_PORT))
+                logging.info('Player last seen %s ago.' %
+                             (timezone.now() - self.ss.last_time_seen_player,))
 
     def start(self):
         """Starts up a droplet from the most recent snapshot."""
-        if self.state != STATE_ARCHIVED:
-            logging.error('Cannot start Minecraft in state %s.' % self.state)
+        if self.ss.state != STATE_ARCHIVED:
+            logging.error('Cannot start Minecraft in state %s.' %
+                          self.ss.state)
             return
 
         snapshot = self._find_snapshot()
@@ -114,20 +118,20 @@ class DropletController(object):
 
     def stop(self):
         """Starts the stop-snapshot-destroy process."""
-        if self.state != STATE_RUNNING:
-            logging.error('Cannot stop Minecraft in state %s.' % self.state)
+        if self.ss.state != STATE_RUNNING:
+            logging.error('Cannot stop Minecraft in state %s.' % self.ss.state)
             return
 
-        self._set_droplet()
+        self._refresh_droplet()
         logging.info('Stopping Minecraft.')
         self._exec_ssh_cmd('supervisorctl stop minecraft')
         self._set_state(STATE_STOPPING)
 
     def update_state(self):
         # TODO: States should have their own timeouts.
-        self._set_droplet()
+        self._refresh_droplet()
 
-        if self.state == STATE_UNKNOWN:
+        if self.ss.state == STATE_UNKNOWN:
             return
 
         # Some conditions cause direct movement to a particular state.
@@ -143,48 +147,50 @@ class DropletController(object):
         # other condition(s).
 
         if self.droplet.status == 'off':
-            # State should either be SHUTTING_DOWN or SNAPSHOTTING.
-            if self.state != STATE_SNAPSHOTTING:
+            # State should either be SHUTTING_DOWN or SNAPSHOTTING or
+            # DESTROYING.
+            if self.ss.state not in (STATE_SNAPSHOTTING, STATE_DESTROYING):
                 shutdown_error = False
 
-                if self.state != STATE_SHUTTING_DOWN:
+                if self.ss.state != STATE_SHUTTING_DOWN:
                     logging.warning('Droplet status changed to shutting down '
-                                    'while in state %s.' % self.state)
+                                    'while in state %s.' % self.ss.state)
                     shutdown_error = True
 
                 self._snapshot(shutdown_error)
                 self._set_state(STATE_SNAPSHOTTING)
 
-        if self.state == STATE_ARCHIVED or self.state == STATE_RESTORING:
+        if self.ss.state == STATE_ARCHIVED or self.ss.state == STATE_RESTORING:
             if self.droplet.status == 'active':
                 self._set_state(STATE_STARTING)
 
-        if self.state == STATE_STARTING:
+        if self.ss.state == STATE_STARTING:
             if self._minecraft_port_open():
                 self._set_state(STATE_RUNNING)
                 # We haven't seen a player yet, but we need to given them
                 # time to join.
-                self.last_time_seen_player = time.time()
+                self.ss.last_time_seen_player = timezone.now()
+                self.ss.save()
                 logging.info('Minecraft available on %s:%d.' %
                              (self.droplet_ip, MINECRAFT_PORT))
                 file(os.path.join(self.data_dir, 'minecraft_address'),
                      'w').write('%s:%d\n' % (self.droplet_ip, MINECRAFT_PORT))
 
-        if self.state == STATE_RUNNING:
+        if self.ss.state == STATE_RUNNING:
             self._check_players()
-            if (time.time() > (self.last_time_seen_player +
-                               MAX_SECONDS_NO_PLAYERS)):
+            if (timezone.now() > (self.ss.last_time_seen_player +
+                                  MAX_TIMEDELTA_NO_PLAYERS)):
                 logging.info('No players for the last %d seconds.' %
-                             (time.time() - self.last_time_seen_player))
+                             (timezone.now() - self.ss.last_time_seen_player))
                 self.stop()
             # TODO: maybe move to STOPPING after a certain number of socket
             # errors.
 
-        if self.state == STATE_STOPPING:
+        if self.ss.state == STATE_STOPPING:
             if not self._minecraft_port_open():
                 self._shutdown()
 
-        if self.state == STATE_SNAPSHOTTING:
+        if self.ss.state == STATE_SNAPSHOTTING:
             if self.snapshot_action is None:
                 logging.error('No snapshot action while in SNAPSHOTTING '
                               'state!')
@@ -197,7 +203,8 @@ class DropletController(object):
                 logging.info('Snapshot completed: %s %s.' %
                              (self.snapshot_action.resource_type,
                               self.snapshot_action.resource_id))
-                del self.snapshot_action_id
+                self.ss.snapshot_action_id = None
+                self.ss.save()
                 self.droplet.destroy()
                 self._set_state(STATE_DESTROYING)
             elif self.snapshot_action.status == 'errored':
@@ -206,31 +213,6 @@ class DropletController(object):
 
         # DESTROYING should progress to ARCHIVED through a general state
         # change above.
-
-    def wait_for_state(self, new_state, timeout=60, sleep_time=2,
-                       update_time=10):
-        start_time = time.time()
-        last_update_state = self.state
-        last_update_time = start_time
-        self.update_state()
-
-        while self.state != new_state and time.time() < start_time + timeout:
-            if last_update_state != self.state:
-                last_update_state = self.state
-                last_update_time = time.time()
-            elif time.time() >= last_update_time + update_time:
-                logging.info('Still in state %s...' % self.state)
-                last_update_time = time.time()
-            time.sleep(sleep_time)
-            self.update_state()
-
-        if self.state == new_state:
-            return True
-
-        logging.warning('Droplet did not change to state %s within %d '
-                        'seconds.  State is currently %s.' %
-                        (new_state, timeout, self.state))
-        return False
 
     @property
     def api_key(self):
@@ -252,53 +234,15 @@ class DropletController(object):
         return digitalocean.Manager(token=self.api_key)
 
     @property
-    def last_time_seen_player(self):
-        if self._last_time_seen_player is None:
-            try:
-                self._last_time_seen_player = int(
-                    file(self.last_time_seen_player_path).read())
-            except IOError:
-                self._last_time_seen_player = 0
-        return self._last_time_seen_player
-
-    @last_time_seen_player.setter
-    def last_time_seen_player(self, t):
-        file(self.last_time_seen_player_path, 'w').write('%d' % t)
-        self._last_time_seen_player = int(t)
-
-    @property
-    def snapshot_action_id(self):
-        if self._snapshot_action_id is None:
-            try:
-                self._snapshot_action_id = json.loads(
-                    file(self.snapshot_action_id_path).read())
-            except IOError:
-                pass
-        return self._snapshot_action_id
-
-    @snapshot_action_id.setter
-    def snapshot_action_id(self, d):
-        if d is None:
-            del self.snapshot_action_id
-            return
-        file(self.snapshot_action_id_path, 'w').write(json.dumps(d))
-        self._snapshot_action_id = d
-        self._snapshot_action = None
-
-    @snapshot_action_id.deleter
-    def snapshot_action_id(self):
-        self._snapshot_action_id = None
-        os.unlink(self.snapshot_action_id_path)
-
-    @property
     def snapshot_action(self):
-        if self.snapshot_action_id is None:
+        if self.ss.snapshot_action_id is None:
             return None
-        if self._snapshot_action is None:
+        if (self._snapshot_action is None or
+            self._snapshot_action.id != self.ss.snapshot_action_id):
             # TODO: The action might not exist anymore, in which case we need
             # to clear the id variable.
             self._snapshot_action = digitalocean.Action.get_object(
-                self.api_key, self.snapshot_action_id)
+                self.api_key, self.ss.snapshot_action_id)
         return self._snapshot_action
 
     def _find_ssh_key(self):
@@ -317,7 +261,7 @@ class DropletController(object):
 
         return snapshots[0]
 
-    def _set_droplet(self):
+    def _refresh_droplet(self):
         for droplet in self.manager.get_all_droplets():
             if droplet.name == DROPLET_NAME:
                 self.droplet = droplet
@@ -326,16 +270,16 @@ class DropletController(object):
             self.droplet = None
 
     def _set_state(self, new_state):
-        if self.state is None:
+        if self.ss.state is None:
             logging.info('Setting initial state to %s.' % (new_state))
-        elif self.state == new_state:
+        elif self.ss.state == new_state:
             return
         else:
-            logging.info('State changed from %s to %s.' % (self.state,
+            logging.info('State changed from %s to %s.' % (self.ss.state,
                                                            new_state))
 
-        self.state = new_state
-        file(self.state_path, 'w').write(self.state)
+        self.ss.state = new_state
+        self.ss.save()
 
     def _minecraft_port_open(self):
         if self.droplet_ip is None:
@@ -368,8 +312,9 @@ class DropletController(object):
         if shutdown_error:
             snapshot_name += '-error'
 
-        self.snapshot_action_id = self.droplet.take_snapshot(snapshot_name)[
+        self.ss.snapshot_action_id = self.droplet.take_snapshot(snapshot_name)[
             'action']['id']
+        self.ss.save()
 
     def _exec_ssh_cmd(self, cmdline):
         client = SSHClient()
@@ -414,5 +359,11 @@ class DropletController(object):
         return int(m.group(1))
 
     def _check_players(self):
-        if self._num_players() > 0:
-            self.last_time_seen_player = time.time()
+        if self.ss.last_time_seen_player is None or self._num_players() > 0:
+            self.ss.last_time_seen_player = timezone.now()
+            self.ss.save()
+
+    def _refresh_state(self):
+        # TODO: This assumes there is only one entry in the table (i.e. one
+        # server).
+        self.ss = ServerState.objects.get(id=1)

@@ -1,0 +1,2 @@
+SECRET_KEY = '<random 50-character string>'
+
