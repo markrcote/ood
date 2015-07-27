@@ -187,3 +187,4 @@ since copying text from the Minecraft server list seems to be disabled.
 [MCRcon]: https://github.com/barneygale/MCRcon
 [quarry]: https://github.com/barneygale/quarry
 [state machine code]: https://github.com/djmitche/mozpool/blob/master/mozpool/statemachine.py
+[Celery]: http://docs.celeryproject.org
