@@ -54,7 +54,7 @@ Then in a Python interpreter you can start up the process:
     >>> from ood.tasks import start
     >>> start.delay()
 
-The Minecraft server's IP and port are logged and also writted to
+The Minecraft server's IP and port are logged and also written to
 `~/.ood/minecraft_address`.
 
 After 15 minutes (by default) without a player, the next worker call
@@ -82,7 +82,7 @@ docker instance.
 *Later still...*
 
 Started building the web app in Django.  I've started and worked on a
-number of Django projects, but I always seem to have to go back to the
+number of Django projects, but I always seem to end up back at the
 tutorial for the first few steps.  And after that I feel like I'm
 reinventing processes to get convenient dev and prod
 environments...
@@ -108,7 +108,7 @@ the point, particularly if you restrict the user to localhost.
 All the state metadata is now in a Django model.  The Django app
 doesn't do anything yet, but it now has a shared data model with the
 Celery tasks.  It's pretty messy, but the data is pretty small right
-now so there's huge no problems.  It should still all be separated out
+now so there are no big problems.  It should still all be separated out
 for sanity.
 
 I got rid of DropletController.wait_for_state() and test.py since the
@@ -116,6 +116,10 @@ Celery stuff has obsoleted that.
 
 For testing, setting `settings_local.UPDATE_STATE_PERIOD_SECONDS` to a
 small number is very helpful.
+
+Oh and most of the setup stuff of the previous update is still valid.
+What remains now feels somewhat less temporary, so I should move it
+up into proper installation docs.
 
 ### 2015/07/26
 
