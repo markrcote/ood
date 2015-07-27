@@ -26,7 +26,7 @@ without players, the host is archived and destroyed.
 OoD is in the early stages.
 
 * Host controller: core is functional; celery tasks to control it.
-* Web app: not started.
+* Web app: Skeleton created. Models defined for use by core.
 * Droplet creation: not started.
 
 ### 2015/07/26
