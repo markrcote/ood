@@ -191,7 +191,7 @@ class DropletController(object):
             self._check_players()
             if (timezone.now() > (self.ss.last_time_seen_player +
                                   MAX_TIMEDELTA_NO_PLAYERS)):
-                logging.info('No players for the last %d seconds.' %
+                logging.info('No players for the last %s.' %
                              (timezone.now() - self.ss.last_time_seen_player))
                 self.stop()
             # TODO: maybe move to STOPPING after a certain number of socket
