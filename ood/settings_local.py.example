@@ -1,2 +1,9 @@
 SECRET_KEY = '<random 50-character string>'
 UPDATE_STATE_PERIOD_SECONDS = 10
+
+# You need to register your app with Google.
+# See https://developers.google.com/+/web/signin/#step_1_create_a_client_id_and_client_secret.
+# This is your Client ID.
+SOCIAL_AUTH_GOOGLE_PLUS_KEY = ''
+# This is your Client secret.
+SOCIAL_AUTH_GOOGLE_PLUS_SECRET = ''

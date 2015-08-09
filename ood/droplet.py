@@ -27,7 +27,7 @@ STATE_BOOTING = 'booting'
 STATE_STARTING = 'starting'
 STATE_RUNNING = 'running'
 STATE_STOPPING = 'stopping'
-STATE_SHUTTING_DOWN = 'shutting_down'
+STATE_SHUTTING_DOWN = 'shutting down'
 STATE_SNAPSHOTTING = 'snapshotting'
 STATE_DESTROYING = 'destroying'
 STATE_UNKNOWN = 'unknown'
@@ -181,11 +181,11 @@ class DropletController(object):
                 # We haven't seen a player yet, but we need to given them
                 # time to join.
                 self.ss.last_time_seen_player = timezone.now()
+                self.ss.droplet_ip_address = self.droplet_ip
+                self.ss.droplet_port = MINECRAFT_PORT
                 self.ss.save()
                 logging.info('Minecraft available on %s:%d.' %
                              (self.droplet_ip, MINECRAFT_PORT))
-                file(os.path.join(self.data_dir, 'minecraft_address'),
-                     'w').write('%s:%d\n' % (self.droplet_ip, MINECRAFT_PORT))
 
         if self.ss.state == STATE_RUNNING:
             self._check_players()

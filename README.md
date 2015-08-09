@@ -25,9 +25,70 @@ without players, the host is archived and destroyed.
 
 OoD is in the early stages.
 
-* Host controller: core is functional; celery tasks to control it.
-* Web app: Skeleton created. Models defined for use by core.
+* Host controller: functional.
+* Web app: functional.
 * Droplet creation: not started.
+
+### 2015/08/09
+
+I think OoD is now fully functional!  I built out some simple Django
+views and templates, with the help of Boostrap.  I integrated Google
+Sign-In via [Python Social Auth][].  It works, and I understand the
+principles, but I got slightly strange behaviour.  The Python Social
+Auth [docs on Google+ Sign-In][] integration don't mention that the
+script tries to sign you in automatically, and you'll get an error if
+you haven't previously authorized OoD in your Google+ profile.
+Furthemore, the `alert()` statement provided in their example doesn't
+work, since you need to concatenate the string with the error message,
+not pass the latter as a second argument.  For now, I just made it
+ignore `access_denied` errors, but I need to look into this more.  If
+you haven't previously authorized it, you just click on the Sign-In
+button, and then authorize the app, and you're good to go.  I also
+have to figure out if I can ask for fewer privileges--I really only
+want an email/identity; I don't need access to contacts and such.
+
+Aside: is it normal for an app to automatically log you in just by going to
+the login view if you've previously authorized it? I'm not sure; it's
+kind of weird, but also kind of convenient, but also sometimes
+inconvenient, since you can't use the username/password login without
+logging out of Google altogether.  Then again, maybe I should just
+remove the username/password; the only reason I'd want to log in that
+way is to do admin stuff, and I can go straight to the admin page for that.
+
+And a last note: it seems that Google has a new version of sign-in; at
+least, the instructions in their official
+[Google Sign-In for Websites][] docs aren't the same as those in the
+Python Social Auth docs (and the former refers to `g-signin2`, whereas
+the latter uses `g-signin`).  I haven't looked into this, though, and
+the (presumably) old version works fine, at least once you stop
+alerting on expected errors.
+
+The [docs on Setting up Sign-In][] are still up to date; you'll need
+to do that to set up your own OoD server.
+
+Anyone can sign into OoD, but only people with proper permissions can
+see the status and perform actions.  Separate permissions are required
+to start and to stop the server, since presumably only admins would be
+able to do the latter.  These permissions can be set from the admin ui
+(`/admin/`); you need to create an admin user first:
+
+    python manage.py createsuperuser --username=<username> --email=<email>
+
+You'll then be prompted for a password.  It doesn't seem possible to
+make a user this way and then have them log in via Google+.  Maybe you
+can add the right bits afterward, but I just created a separate admin
+user.
+
+To enable the permissions, click on Users, then the user in question,
+and finally at the bottom, under "User permissions:", add "ood |
+server state | Can start up server" and maybe "ood | server state | Can
+stop the server".  The user will see the server status and controls
+when they next load the main OoD page.
+
+Ideally at some point there will be a super simple admin interface to
+grant these permissions.
+
+More improvements to come.
 
 ### 2015/07/26
 
@@ -230,3 +291,7 @@ since copying text from the Minecraft server list seems to be disabled.
 [quarry]: https://github.com/barneygale/quarry
 [state machine code]: https://github.com/djmitche/mozpool/blob/master/mozpool/statemachine.py
 [Celery]: http://docs.celeryproject.org
+[Python Social Auth]: http://python-social-auth.readthedocs.org
+[docs on Google+ Sign-In]: http://python-social-auth.readthedocs.org/en/latest/backends/google.html#google-sign-in
+[Google Sign-In for Websites]: https://developers.google.com/identity/sign-in/web/
+[docs on Setting up Sign-In]: https://developers.google.com/+/web/signin/

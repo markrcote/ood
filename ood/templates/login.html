@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+<script type="text/javascript"
+        src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+
+<script type="text/javascript">
+  (function() {
+     var po = document.createElement('script');
+     po.type = 'text/javascript';
+     po.async = true;
+     po.src = 'https://apis.google.com/js/client:plusone.js';
+     var s = document.getElementsByTagName('script')[0];
+     s.parentNode.insertBefore(po, s);
+   })();
+</script>
+
+<script type="text/javascript">
+  var signInCallback = function (result) {
+    if (result['error']) {
+      if (result['error'] != 'immediate_failed' ||
+          result['error_subtype'] != 'access_denied') {
+            alert('An error happened: ' + result['error']);
+      }
+    } else {
+      $('#code').attr('value', result['code']);
+      $('#at').attr('value', result['access_token']);
+      $('#google-plus').submit()
+    }
+  };
+</script>
+{% endblock %}
+
+{% block content %}
+<h4>Log in with your username and password</h4>
+
+<div>
+  {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+  {% endif %}
+
+  <form method="post"
+        action="{% url 'django.contrib.auth.views.login' %}">
+    {% csrf_token %}
+    <table>
+      <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+      </tr>
+      <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+      </tr>
+    </table>
+
+    <input type="submit" value="login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+  </form>
+</div>
+
+<h4>Or log in with Google+</h4>
+
+<div id="signinButtonContainer">
+  <span id="signinButton">
+    <span
+       class="g-signin"
+       data-callback="signInCallback"
+       data-clientid="{{ plus_id }}"
+       data-cookiepolicy="single_host_origin"
+       data-requestvisibleactions="http://schemas.google.com/AddActivity"
+       data-scope="https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/userinfo.email">
+    </span>
+  </span>
+</div>
+
+<form id="google-plus" method="post"
+      action="{% url 'social:complete' "google-plus" %}">
+  {% csrf_token %}
+  <input id="at" type="hidden" name="access_token" value="" />
+  <input id="code" type="hidden" name="code" value="" />
+</form>
+
+<h5>If you have previously authorized Ore on Demand with Google, you are being
+  automatically logged in now.</h5>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block meta %}
+<meta http-equiv="refresh" content="30;URL='{% url 'main' %}'" />
+{% endblock %}
+
+{% block content %}
+{% if server_state %}
+  <p>The server is currently {{ server_state.state }}.</p>
+
+  {% if server_state.state == 'archived' %}
+    <a href="{% url 'wakeup' %}" class="btn btn-default">Wake up</a>
+  {% elif server_state.state == 'running' and can_stop %}
+    <p>
+      The server is running on
+      {{ server_state.droplet_ip_address }}:{{ server_state.droplet_port }}.
+    </p>
+    <p>We last confirmed that a player was playing at
+     {{ server_state.last_time_seen_player }}.</p>
+    <a href="{% url 'shutdown' %}" class="btn btn-default">Shut down</a>
+  {% endif %}
+{% else %}
+  <p>I don't know you!</p>
+{% endif %}
+{% endblock %}

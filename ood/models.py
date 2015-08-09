@@ -12,7 +12,15 @@ class ServerState(models.Model):
     separated out at some point.  Some is specific to particular states
     and some to particular cloud hosts.
     """
+    class Meta:
+        permissions = (
+            ('can_start', 'Can start up server'),
+            ('can_stop', 'Can stop the server'),
+        )
+
     server = models.ForeignKey(Server)
     state = models.CharField(max_length=32, null=True)
     last_time_seen_player = models.DateTimeField(null=True)
     snapshot_action_id = models.IntegerField(null=True)
+    droplet_ip_address = models.GenericIPAddressField(null=True)
+    droplet_port = models.IntegerField(null=True)

@@ -56,6 +56,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Emacs
+*~
+
 # OoD
 celerybeat-schedule
 ood/settings_local.py

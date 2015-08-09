@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block meta %}
+<meta http-equiv="refresh" content="5;URL='{{ processing_url }}'" />
+{% endblock %}
+
+{% block content %}
+<p>Waiting for server to process {{ command }} command...</p>
+{% endblock %}
