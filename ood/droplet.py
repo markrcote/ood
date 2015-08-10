@@ -9,9 +9,9 @@ from operator import attrgetter
 
 import digitalocean
 from django.utils import timezone
-from mcrcon import MCRcon
 from paramiko.client import AutoAddPolicy, SSHClient
 
+from ood.contrib.MCRcon.mcrcon import MCRcon
 from ood.models import ServerState
 
 
