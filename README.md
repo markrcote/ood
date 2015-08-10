@@ -32,7 +32,7 @@ OoD is in the early stages.
 ### 2015/08/09
 
 I think OoD is now fully functional!  I built out some simple Django
-views and templates, with the help of Boostrap.  I integrated Google
+views and templates, with the help of Bootstrap.  I integrated Google
 Sign-In via [Python Social Auth][].  It works, and I understand the
 principles, but I got slightly strange behaviour.  The Python Social
 Auth [docs on Google+ Sign-In][] integration don't mention that the
@@ -44,7 +44,7 @@ not pass the latter as a second argument.  For now, I just made it
 ignore `access_denied` errors, but I need to look into this more.  If
 you haven't previously authorized it, you just click on the Sign-In
 button, and then authorize the app, and you're good to go.  I also
-have to figure out if I can ask for fewer privileges--I really only
+have to figure out if I can ask for fewer privileges.  I really only
 want an email/identity; I don't need access to contacts and such.
 
 Aside: is it normal for an app to automatically log you in just by going to
