@@ -122,6 +122,10 @@ class DropletController(object):
                                             ssh_keys=[ssh_key])
         self.droplet.create()
 
+        # TODO: We need to set to an intermediate state, say,
+        # 'starting', so that the UI knows we have started executing the
+        # given command.
+
     def stop(self):
         """Starts the stop-snapshot-destroy process."""
         if self.ss.state != STATE_RUNNING:
