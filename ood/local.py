@@ -28,8 +28,10 @@ class LocalControllerHandler(asynchat.async_chat):
         global minecraft_proc
 
         if minecraft_proc:
-            self.log('MineCraft server is already running!')
-            return
+            if minecraft_proc.poll():
+                self.log('MineCraft server is already running!')
+                return
+            minecraft_proc = None
 
         minecraft_proc = subprocess.Popen(
             ['java', '-Xmx1024M', '-Xms1024M', '-jar', self.minecraft_jar,
@@ -37,6 +39,8 @@ class LocalControllerHandler(asynchat.async_chat):
             stdout=self.out,
             stderr=subprocess.STDOUT,
             cwd=self.minecraft_path)
+
+        return 'started'
 
     def stop_mc(self):
         global minecraft_proc
@@ -46,9 +50,21 @@ class LocalControllerHandler(asynchat.async_chat):
             return
 
         minecraft_proc.terminate()
-        rc = minecraft_proc.wait()
-        self.log('MineCraft server exited with return code %d.' % rc)
-        minecraft_proc = None
+        return 'stopping'
+
+    def mc_running(self):
+        global minecraft_proc
+
+        if not minecraft_proc:
+            self.log('Minecraft server is not running!')
+            return False
+
+        if not minecraft_proc.poll():
+            return True
+
+        self.log('MineCraft server exited with return code %d.' %
+                 minecraft_proc.returncode)
+        return False
 
     def collect_incoming_data(self, data):
         self.ibuffer.append(data)
@@ -56,12 +72,19 @@ class LocalControllerHandler(asynchat.async_chat):
     def found_terminator(self):
         cmd = ''.join(self.ibuffer).strip()
         self.ibuffer = []
+        response = None
+
         if cmd == 'start':
-            self.start_mc()
+            response = self.start_mc()
         elif cmd == 'stop':
-            self.stop_mc()
+            response = self.stop_mc()
+        elif cmd == 'running':
+            response = str(self.mc_running())
         else:
-            self.log('Unknown command "%s".' % cmd)
+            response = 'Unknown command "%s".' % cmd
+
+        if response is not None:
+            self.push('%s\n' % response)
 
 
 class LocalControllerServer(asyncore.dispatcher):
