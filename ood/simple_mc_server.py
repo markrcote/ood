@@ -9,7 +9,7 @@ import subprocess
 minecraft_proc = None
 
 
-class LocalControllerHandler(asynchat.async_chat):
+class Handler(asynchat.async_chat):
 
     def __init__(self, minecraft_path, minecraft_jar, sock):
         asynchat.async_chat.__init__(self, sock=sock)
@@ -19,19 +19,17 @@ class LocalControllerHandler(asynchat.async_chat):
         self.ibuffer = []
         self.out = file(os.path.join(self.minecraft_path, 'ood_local.log'),
                         'a')
-        self.log('OoD local controller starting.')
+        self.log('OoD simple server starting.')
 
     def log(self, msg):
-        self.out.write('[%s] OOD_LOCAL %s\n' % (datetime.datetime.now(), msg))
+        self.out.write('[%s] OOD_SIMPLE %s\n' % (datetime.datetime.now(), msg))
 
     def start_mc(self):
         global minecraft_proc
 
         if minecraft_proc:
-            if minecraft_proc.poll():
-                self.log('MineCraft server is already running!')
-                return
-            minecraft_proc = None
+            if self._check_running():
+                return 'already running'
 
         minecraft_proc = subprocess.Popen(
             ['java', '-Xmx1024M', '-Xms1024M', '-jar', self.minecraft_jar,
@@ -45,26 +43,15 @@ class LocalControllerHandler(asynchat.async_chat):
     def stop_mc(self):
         global minecraft_proc
 
-        if not minecraft_proc:
+        if not self._check_running():
             self.log('Minecraft server is not running!')
-            return
+            return 'not running'
 
         minecraft_proc.terminate()
         return 'stopping'
 
     def mc_running(self):
-        global minecraft_proc
-
-        if not minecraft_proc:
-            self.log('Minecraft server is not running!')
-            return False
-
-        if not minecraft_proc.poll():
-            return True
-
-        self.log('MineCraft server exited with return code %d.' %
-                 minecraft_proc.returncode)
-        return False
+        return self._check_running()
 
     def collect_incoming_data(self, data):
         self.ibuffer.append(data)
@@ -86,8 +73,22 @@ class LocalControllerHandler(asynchat.async_chat):
         if response is not None:
             self.push('%s\n' % response)
 
+    def _check_running(self):
+        global minecraft_proc
 
-class LocalControllerServer(asyncore.dispatcher):
+        if not minecraft_proc:
+            return False
+
+        if not minecraft_proc.poll():
+            return True
+
+        self.log('MineCraft server exited with return code %d.' %
+                 minecraft_proc.returncode)
+        minecraft_proc = None
+        return False
+
+
+class Server(asyncore.dispatcher):
 
     def __init__(self, minecraft_path, minecraft_jar, port):
         asyncore.dispatcher.__init__(self)
@@ -100,8 +101,7 @@ class LocalControllerServer(asyncore.dispatcher):
 
     def handle_accept(self):
         client_info = self.accept()
-        LocalControllerHandler(self.minecraft_path, self.minecraft_jar,
-                               client_info[0])
+        Handler(self.minecraft_path, self.minecraft_jar, client_info[0])
 
 
 if __name__ == '__main__':
@@ -125,6 +125,6 @@ if __name__ == '__main__':
     else:
         jar_file = 'minecraft_server.jar'
 
-    lcs = LocalControllerServer(path, jar_file, port)
+    lcs = Server(path, jar_file, port)
 
     asyncore.loop()
