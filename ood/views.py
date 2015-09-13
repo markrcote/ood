@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 
-from ood.models import ServerState
+from ood.models import SimpleServerState
 from ood.tasks import start as start_server
 from ood.tasks import stop as stop_server
 
@@ -11,7 +11,7 @@ from ood.tasks import stop as stop_server
 @login_required
 def main(request):
     if request.user.is_authenticated and request.user.has_perm('ood.can_start'):
-        server_state = ServerState.objects.get(id=1)
+        server_state = SimpleServerState.objects.get(id=1)
     else:
         server_state = None
     can_stop = request.user.has_perm('ood.can_stop')
@@ -48,7 +48,7 @@ def shutdown(request):
 # parameter in the path.
 @login_required
 def processing_start(request):
-    server_state = ServerState.objects.get(id=1)
+    server_state = SimpleServerState.objects.get(id=1)
     if server_state.state == 'archived':
         return render(request, 'processing_command.html', {
             'processing_url': reverse('processing_start'),
@@ -60,7 +60,7 @@ def processing_start(request):
 
 @login_required
 def processing_stop(request):
-    server_state = ServerState.objects.get(id=1)
+    server_state = SimpleServerState.objects.get(id=1)
     if server_state.state == 'running':
         return render(request, 'processing_command.html', {
             'processing_url': reverse('processing_stop'),
