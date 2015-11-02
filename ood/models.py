@@ -16,9 +16,17 @@ class OodInstance(models.Model):
     state = models.CharField(max_length=32, null=True)
     last_state_update = models.DateTimeField(null=True)
 
+    def server_type_desc(self):
+        if self.server_type == OodInstance.SIMPLE_SERVER:
+            return 'simple server'
+        elif self.server_type == OodInstance.DROPLET_SERVER:
+            return 'DigitalOcean droplet'
+        else:
+            return 'unknown'
+
 
 class MineCraftServerSettings(models.Model):
-    ood = models.ForeignKey(OodInstance)
+    ood = models.OneToOneField(OodInstance)
     ip_address = models.GenericIPAddressField(null=True)
     port = models.IntegerField()
     rcon_port = models.IntegerField()
@@ -26,7 +34,7 @@ class MineCraftServerSettings(models.Model):
 
 
 class ServerPlayerState(models.Model):
-    ood = models.ForeignKey(OodInstance)
+    ood = models.OneToOneField(OodInstance)
     last_time_seen_player = models.DateTimeField(null=True)
     last_time_checked_players = models.DateTimeField(null=True)
     num_players = models.IntegerField(null=True)
@@ -39,13 +47,13 @@ class DropletState(models.Model):
     separated out at some point.  Some is specific to particular states
     and some to particular cloud hosts.
     """
-    ood = models.ForeignKey(OodInstance)
+    ood = models.OneToOneField(OodInstance)
     snapshot_action_id = models.IntegerField(null=True)
     droplet_ip_address = models.GenericIPAddressField(null=True)
     droplet_port = models.IntegerField(null=True)
 
 
 class SimpleServerState(models.Model):
-    ood = models.ForeignKey(OodInstance)
+    ood = models.OneToOneField(OodInstance)
     ip_address = models.GenericIPAddressField(null=True)
     port = models.IntegerField(null=True)

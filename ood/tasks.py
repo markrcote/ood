@@ -15,9 +15,8 @@ def update_state():
 
 
 @app.task
-def start():
-    # TODO: Take argument of instance id.
-    instance = OodInstance.objects.get(pk=1)
+def start(instance_id):
+    instance = OodInstance.objects.get(pk=instance_id)
     sm = StateMachine(instance)
     if not sm.controller.running():
         sm.controller.start()
@@ -25,9 +24,8 @@ def start():
 
 
 @app.task
-def stop():
-    # TODO: Take argument of instance id.
-    instance = OodInstance.objects.get(pk=1)
+def stop(instance_id):
+    instance = OodInstance.objects.get(pk=instance_id)
     sm = StateMachine(instance)
     if sm.controller.running():
         sm.controller.stop()
