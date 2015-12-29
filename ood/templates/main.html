@@ -22,12 +22,12 @@
         {{ instance.minecraftserversettings.ip_address }}:{{ instance.minecraftserversettings.port }}.
       </p>
 
-      {% if instance.server_player_state.num_players == 0 %}
-        <p>There are currently no players connected.  The last time a player was seen was at {{ instance.server_player_state.last_time_seen_player }}.</p>
-      {% elif instance.server_player_state.num_players == 1 %}
+      {% if instance.serverplayerstate.num_players == 0 %}
+        <p>There are currently no players connected.  The last time a player was seen was at {{ instance.serverplayerstate.last_time_seen_player }}</p>
+      {% elif instance.serverplayerstate.num_players == 1 %}
         <p>There is currently 1 player connected.</p>
       {% else %}
-        <p>There are currently {{ instance.server_player_state.num_players }} players connected.</p>
+        <p>There are currently {{ instance.serverplayerstate.num_players }} players connected.</p>
       {% endif %}
 
       {% if can_stop %}
