@@ -11,6 +11,8 @@ class State(object):
     # periodically by StateMachine.  A value of None means on_timeout() will
     # never be called.  Note that the value in the UPDATE_STATE_PERIOD_SECONDS
     # is the lower bound.
+    # TODO: A default timeout is probably a good thing here; see if there's
+    # any reason not to have it.
     timeout = None
 
     def __init__(self, machine):
@@ -31,6 +33,8 @@ class StateMachine(object):
     module = None
     controller_class = None
     unknown_state_name = None
+    start_state_name = None
+    stop_state_name = None
 
     def __init__(self, ood_instance):
         self.ood_instance = ood_instance
@@ -45,6 +49,7 @@ class StateMachine(object):
 
     def go_to_state(self, state_name):
         self.ood_instance.state = state_name
+        self.ood_instance.last_state_update = timezone.now()
         self.ood_instance.save()
 
     def update(self):

@@ -1,7 +1,6 @@
 import sys
 
 from ood.controllers.simple import SimpleServerController
-from ood.models import SimpleServerState
 from ood.state import State, StateMachine as StateMachineBase
 
 
@@ -46,6 +45,7 @@ class Stopping(State):
 
 class StateMachine(StateMachineBase):
     module = sys.modules[__name__]
-    state_model_class = SimpleServerState
     controller_class = SimpleServerController
     unknown_state_name = 'archived'
+    start_state_name = 'starting'
+    stop_state_name = 'stopping'

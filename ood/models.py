@@ -28,9 +28,9 @@ class OodInstance(models.Model):
 class MineCraftServerSettings(models.Model):
     ood = models.OneToOneField(OodInstance)
     ip_address = models.GenericIPAddressField(null=True)
-    port = models.IntegerField()
-    rcon_port = models.IntegerField()
-    rcon_password = models.CharField(max_length=64)
+    port = models.IntegerField(null=True)
+    rcon_port = models.IntegerField(null=True)
+    rcon_password = models.CharField(max_length=64, null=True)
 
 
 class ServerPlayerState(models.Model):
@@ -50,7 +50,6 @@ class DropletState(models.Model):
     ood = models.OneToOneField(OodInstance)
     snapshot_action_id = models.IntegerField(null=True)
     droplet_ip_address = models.GenericIPAddressField(null=True)
-    droplet_port = models.IntegerField(null=True)
 
 
 class SimpleServerState(models.Model):

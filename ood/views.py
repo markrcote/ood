@@ -37,38 +37,38 @@ def logout(request):
 @login_required
 @permission_required('ood.can_start')
 def wakeup(request, instance_id):
-    start_server.delay(instance_id)
-    return redirect('processing_start', instance_id)
+    start_server.delay(int(instance_id))
+    return redirect(reverse('processing_start', args=(instance_id,)))
 
 
 @login_required
 @permission_required('ood.can_stop')
 def shutdown(request, instance_id):
-    stop_server.delay(instance_id)
-    return redirect('processing_stop', instance_id)
+    stop_server.delay(int(instance_id))
+    return redirect(reverse('processing_stop', args=(instance_id,)))
 
 
 # TODO: There should be just one processing_command view that takes a
 # parameter in the path.
 @login_required
 def processing_start(request, instance_id):
-    instance = OodInstance.objects.get(pk=instance_id)
+    instance = OodInstance.objects.get(pk=int(instance_id))
     if instance.state == 'archived':
         return render(request, 'processing_command.html', {
-            'processing_url': reverse('processing_start'),
+            'processing_url': reverse('processing_start', args=(instance_id,)),
             'command': 'start',
         })
     else:
-        return redirect('main')
+        return redirect(reverse('main'))
 
 
 @login_required
 def processing_stop(request, instance_id):
-    instance = OodInstance.objects.get(pk=instance_id)
+    instance = OodInstance.objects.get(pk=int(instance_id))
     if instance.state == 'running':
         return render(request, 'processing_command.html', {
-            'processing_url': reverse('processing_stop'),
+            'processing_url': reverse('processing_stop', args=(instance_id,)),
             'command': 'stop',
         })
     else:
-        return redirect('main')
+        return redirect(reverse('main'))

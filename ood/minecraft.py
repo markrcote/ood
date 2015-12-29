@@ -16,20 +16,31 @@ MAX_TIMEDELTA_NO_PLAYERS = timedelta(minutes=MAX_MINUTES_NO_PLAYERS)
 
 class Client(object):
 
+    """MineCraft controller.
+    This instance is meant to be short lived; therefore, the OoD instance
+    state is loaded in the constructor and not refreshed in any function
+    (except when the function updates the state).
+    """
+
     def __init__(self, ood_instance):
-        self.ood_instance = ood_instance
-        self.settings = MineCraftServerSettings.objects.get(ood=ood_instance)
-        state = self._get_state()
-        if state.last_time_checked_players is None:
-            state.last_time_checked_players = timezone.now()
-        if state.last_time_seen_player is None:
-            state.last_time_seen_player = state.last_time_checked_players
-        if state.num_players is None:
-            state.num_players = 0
-        state.save()
+        self.settings, _ = MineCraftServerSettings.objects.get_or_create(
+            ood=ood_instance)
+        self.player_state, _ = ServerPlayerState.objects.get_or_create(
+            ood=ood_instance)
+
+    def update_host(self, ip_address, port, rcon_port, rcon_password):
+        self.settings.ip_address = ip_address
+        self.settings.port = port
+        self.settings.rcon_port = rcon_port
+        self.settings.rcon_password = rcon_password
+        self.settings.save()
 
     def port_open(self):
+        if not self._host_configured():
+            return False
+
         try:
+            logging.info('trying to connect on %s:%s' % (self.settings.ip_address, self.settings.port))
             s = socket.create_connection((self.settings.ip_address,
                                           self.settings.port),
                                          timeout=5)
@@ -45,16 +56,21 @@ class Client(object):
         return True
 
     def reset_player_info(self):
-        state = self._get_state()
-        state.last_time_checked_players = timezone.now()
-        state.last_time_seen_player = state.last_time_checked_players
-        state.num_players = 0
-        state.save()
+        if not self._host_configured():
+            return
+
+        self.player_state.last_time_checked_players = timezone.now()
+        self.player_state.last_time_seen_player = \
+            self.player_state.last_time_checked_players
+        self.player_state.num_players = 0
+        self.player_state.save()
 
     def check_for_players(self):
-        state = self._get_state()
-        state.last_time_checked_players = timezone.now()
-        state.save()
+        if not self._host_configured():
+            return
+
+        self.player_state.last_time_checked_players = timezone.now()
+        self.player_state.save()
         rcon = MCRcon()
 
         try:
@@ -75,19 +91,18 @@ class Client(object):
             logging.error('Invalid output from /list: %s' % out)
             return 0
 
-        state.num_players = int(m.group(1))
-        if state.num_players:
-            state.last_time_seen_player = state.last_time_checked_players
-        state.save()
+        self.player_state.num_players = int(m.group(1))
+        if self.player_state.num_players:
+            self.player_state.last_time_seen_player = \
+                self.player_state.last_time_checked_players
+        self.player_state.save()
 
     def timeout_no_players(self):
-        state = self._get_state()
-        return (timezone.now() > (state.last_time_seen_player +
+        if not self._host_configured():
+            return False
+
+        return (timezone.now() > (self.player_state.last_time_seen_player +
                                   MAX_TIMEDELTA_NO_PLAYERS))
 
-    def _get_state(self):
-        state = ServerPlayerState.objects.get(ood=self.ood_instance)
-        if state is None:
-            state = ServerPlayerState(ood=self.ood_instance)
-            state.save()
-        return state
+    def _host_configured(self):
+        return self.settings.ip_address and self.settings.port
