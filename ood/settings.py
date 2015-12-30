@@ -74,7 +74,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'America/Montreal'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -92,16 +92,15 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'main'
 # OoD settings.
 
 MAX_MINUTES_NO_PLAYERS = 15
+UPDATE_STATE_PERIOD_SECONDS = 60
 
 # Celery config.
-
-UPDATE_STATE_PERIOD_SECONDS = 60
 
 BROKER_URL = 'amqp://'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TIMEZONE = 'America/Montreal'
+CELERY_TIMEZONE = 'UTC'
 
 # Local settings trump any above.
 
