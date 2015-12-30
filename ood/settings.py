@@ -3,9 +3,8 @@ from datetime import timedelta
 
 
 # All settings here are trumped by settings_local.py, which is imported last.
-
-# In particular, overload this one.
-SECRET_KEY = 'Bah2aeshiem2ahB6HahH1phie0einie3Eapheem4nae2een8oo'
+# In particular, you'll need to set a SECRET_KEY.
+# SECRET_KEY = '<some random string>'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
