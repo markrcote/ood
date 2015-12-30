@@ -29,6 +29,30 @@ OoD is in the early stages.
 * Web app: functional.
 * Droplet creation: not started.
 
+### 2015/12/29
+
+After quite a bit of work, on and off over the last few months, I
+redesigned the internals to be extensible.  OoD now supports different
+ways of running MineCraft.  Included is the original Droplet
+functionality and a new local server.  The latter is mainly for
+testing, although it could be used on a local network to avoid having
+MineCraft always running and using resources.  It is a simple
+TCP-based server that can start and stop a MineCraft instance, given a
+MineCraft directory and a port number.
+
+This extensibility would also allow, for example, AWS or OpenStack
+implementations.  Creating a new instance type involves defining a
+series of states, a controller, and presumably a database model or
+two.  More on this to come.
+
+One OoD instance can also now support multiple MineCraft servers of
+any type, e.g. multiple, separate droplets, or a local controller plus
+droplet, etc.
+
+Configuration of instance is done via the database.
+
+I've started on some installation instructions as well.
+
 ### 2015/08/09
 
 I think OoD is now fully functional!  I built out some simple Django
