@@ -9,7 +9,7 @@ SECRET_KEY = 'Bah2aeshiem2ahB6HahH1phie0einie3Eapheem4nae2een8oo'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
