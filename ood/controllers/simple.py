@@ -7,7 +7,8 @@ from ood.models import SimpleServerState
 class SimpleServerController(object):
 
     def __init__(self, ood_instance):
-        self.state = SimpleServerState.objects.get(ood=ood_instance)
+        self.state, _ = SimpleServerState.objects.get_or_create(
+            ood=ood_instance)
         self.mcc = Client(ood_instance)
 
     def start(self):
