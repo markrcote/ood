@@ -8,6 +8,7 @@ from paramiko.client import AutoAddPolicy, SSHClient
 
 from ood.minecraft import Client
 from ood.models import DropletState
+from ood.settings import MAX_SNAPSHOTS_PER_INSTANCE
 
 # TODO: Make all this configurable.
 MINECRAFT_PORT = 25898
@@ -99,6 +100,12 @@ class DropletController(object):
     def running(self):
         return self.mcc.port_open()
 
+    def prune_snapshots(self):
+        snapshots = self._get_snapshots()
+        for old_snapshot in snapshots[2:]:
+            logging.info('Pruning old snapshot %s.' % old_snapshot.name)
+            old_snapshot.destroy()
+
     @property
     def api_key(self):
         return file(self.api_key_path).read().strip()
@@ -149,10 +156,15 @@ class DropletController(object):
                 return key
         return None
 
+    def _get_snapshots(self):
+        """Return snapshots in reverse chronological age (i.e. newest first).
+        """
+        return sorted([img for img in self.manager.get_my_images()
+                       if img.name.startswith('%s-' % self.state.name)],
+                      key=attrgetter('name'), reverse=True)
+
     def _find_snapshot(self):
-        snapshots = sorted([img for img in self.manager.get_my_images()
-                            if img.name.startswith('%s-' % self.state.name)],
-                           key=attrgetter('name'), reverse=True)
+        snapshots = self._get_snapshots()
 
         if not snapshots:
             return None

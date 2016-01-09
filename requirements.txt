@@ -11,7 +11,7 @@ oauthlib==1.0.1
 paramiko==1.15.2
 pycrypto==2.6.1
 PyJWT==1.4.0
-python-digitalocean==1.6
+python-digitalocean==1.8
 python-openid==2.2.5
 python-social-auth==0.2.12
 pytz==2015.4

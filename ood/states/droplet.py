@@ -135,6 +135,7 @@ class Snapshotting(DropletState):
                           self.machine.controller.snapshot_action.resource_id))
             self.machine.controller.clear_snapshot_action()
             self.machine.controller.destroy()
+            self.machine.controller.prune_snapshots()
             self.machine.go_to_state('destroying')
         elif self.machine.controller.snapshot_action.status == 'errored':
             logging.error('Error taking snapshot!')
