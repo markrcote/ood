@@ -10,8 +10,6 @@ from ood.minecraft import Client
 from ood.models import DropletState
 
 # TODO: Make all this configurable.
-DROPLET_NAME = 'ood'
-REGION = 'nyc3'
 MINECRAFT_PORT = 25898
 MINECRAFT_RCON_PORT = 25899
 
@@ -53,8 +51,8 @@ class DropletController(object):
             return
 
         self.droplet = digitalocean.Droplet(token=self.api_key,
-                                            name='ood',
-                                            region=REGION,
+                                            name=self.state.name,
+                                            region=self.state.region,
                                             image=snapshot.id,
                                             size_slug='1gb',
                                             ssh_keys=[ssh_key])
@@ -83,7 +81,7 @@ class DropletController(object):
             logging.error('Cannot start snapshot: snapshot in progress.')
             return
 
-        snapshot_name = '%s-%d' % (DROPLET_NAME, time.time())
+        snapshot_name = '%s-%d' % (self.state.name, time.time())
         if shutdown_error:
             snapshot_name += '-error'
 
@@ -145,7 +143,7 @@ class DropletController(object):
 
     def _find_snapshot(self):
         snapshots = sorted([img for img in self.manager.get_my_images()
-                            if img.name.startswith('%s-' % DROPLET_NAME)],
+                            if img.name.startswith('%s-' % self.state.name)],
                            key=attrgetter('name'), reverse=True)
 
         if not snapshots:
@@ -155,7 +153,7 @@ class DropletController(object):
 
     def _refresh_droplet(self):
         for droplet in self.manager.get_all_droplets():
-            if droplet.name == DROPLET_NAME:
+            if droplet.name == self.state.name:
                 self.droplet = droplet
                 if self.state.droplet_ip_address != self.droplet_ip:
                     self.state.droplet_ip_address = self.droplet_ip

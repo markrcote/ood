@@ -2,8 +2,12 @@ from django.db import models
 
 
 class OodInstance(models.Model):
-    SIMPLE_SERVER = 0
-    DROPLET_SERVER = 1
+    SIMPLE_SERVER = 'SS'
+    DROPLET_SERVER = 'DO'
+    SERVER_TYPE_CHOICES = (
+        (SIMPLE_SERVER, 'simple server'),
+        (DROPLET_SERVER, 'DigitalOcean droplet')
+    )
 
     class Meta:
         permissions = (
@@ -12,20 +16,21 @@ class OodInstance(models.Model):
         )
 
     name = models.CharField(max_length=64)
-    server_type = models.SmallIntegerField()
+    server_type = models.CharField(max_length=2,
+                                   choices=SERVER_TYPE_CHOICES,
+                                   default=SIMPLE_SERVER)
     state = models.CharField(max_length=32, null=True)
     last_state_update = models.DateTimeField(null=True)
 
-    def server_type_desc(self):
-        if self.server_type == OodInstance.SIMPLE_SERVER:
-            return 'simple server'
-        elif self.server_type == OodInstance.DROPLET_SERVER:
-            return 'DigitalOcean droplet'
-        else:
-            return 'unknown'
-
 
 class MineCraftServerSettings(models.Model):
+    """Settings for a specific MineCraft server.
+    Some of these might change depending on the instance type.
+    TODO: These settings are updated by ood.minecraft.Client.update_host(),
+    which at the moment is only called by
+    ood.controllers.droplet.DropletController.  It should be clearer whether
+    these settings are static or dynamic.
+    """
     ood = models.OneToOneField(OodInstance)
     ip_address = models.GenericIPAddressField(null=True)
     port = models.IntegerField(null=True)
@@ -48,8 +53,10 @@ class DropletState(models.Model):
     and some to particular cloud hosts.
     """
     ood = models.OneToOneField(OodInstance)
+    name = models.CharField(max_length=32, default='ood')
     snapshot_action_id = models.IntegerField(null=True)
     droplet_ip_address = models.GenericIPAddressField(null=True)
+    region = models.CharField(max_length=64, default='nyc3')
 
 
 class SimpleServerState(models.Model):

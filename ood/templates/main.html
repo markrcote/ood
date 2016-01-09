@@ -7,7 +7,7 @@
 {% block content %}
 
 {% for instance in instances %}
-  <h2>{{ instance.name }} ({{ instance.server_type_desc }})</h2>
+  <h2>{{ instance.name }} ({{ instance.get_server_type_display }})</h2>
 
   {% if instance.state %}
     <p>The server is currently {{ instance.state }}.</p>
