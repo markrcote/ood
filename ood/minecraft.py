@@ -40,7 +40,6 @@ class Client(object):
             return False
 
         try:
-            logging.info('trying to connect on %s:%s' % (self.settings.ip_address, self.settings.port))
             s = socket.create_connection((self.settings.ip_address,
                                           self.settings.port),
                                          timeout=5)
