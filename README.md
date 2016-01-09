@@ -1,10 +1,8 @@
 # OoD: Ore on Demand
 
 OoD is a system that creates a Minecraft server on demand and archives
-and destroys it when is no longer in use.
-
-OoD will also be a simple web app that allows authorized users to start and
-stop the game.
+and destroys it when is no longer in use.  It includes a simple web
+app that allows authorized users to start and stop the game.
 
 The primary audience for OoD is a small group of casual Minecrafters, for
 which a dedicated server would sit idle most of the time.  OoD minimizes
@@ -21,4 +19,5 @@ is already running, the IP is displayed.  If not, they can start up
 the server from the previous archive.  After a certain amount of time
 without players, the host is archived and destroyed.
 
-
+See INSTALL.md to get started (currently in progress as I make
+configuration easier).
