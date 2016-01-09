@@ -22,6 +22,9 @@ class OodInstance(models.Model):
     state = models.CharField(max_length=32, null=True)
     last_state_update = models.DateTimeField(null=True)
 
+    def __unicode__(self):
+        return u'%s (%s)' % (self.name, self.get_server_type_display())
+
 
 class MineCraftServerSettings(models.Model):
     """Settings for a specific MineCraft server.

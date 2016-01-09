@@ -1,8 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.conf.urls import include, url
-from django.contrib import admin
 
-from ood import settings, views
+from ood import admin, settings, views
 
 
 urlpatterns = [
@@ -21,5 +20,5 @@ urlpatterns = [
         name='processing_start'),
     url(r'^processing_stop/([0-9]+)/$', views.processing_stop,
         name='processing_stop'),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.admin_site.urls)),
 ]

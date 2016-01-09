@@ -127,12 +127,20 @@ class DropletController(object):
     def snapshot_action(self):
         if self.state.snapshot_action_id is None:
             return None
-        if (self._snapshot_action is None or
-            self._snapshot_action.id != self.state.snapshot_action_id):
-            # TODO: The action might not exist anymore, in which case we need
-            # to clear the id variable.
-            self._snapshot_action = digitalocean.Action.get_object(
-                self.api_key, self.state.snapshot_action_id)
+
+        get_snapshot_action = (
+            self._snapshot_action is None or
+            self._snapshot_action.id != self.state.snapshot_action_id
+        )
+
+        if get_snapshot_action:
+            try:
+                self._snapshot_action = digitalocean.Action.get_object(
+                    self.api_key, self.state.snapshot_action_id)
+            except digitalocean.DataReadError:
+                self.state.snapshot_action_id = None
+                self.state.save()
+                self._snapshot_action = None
         return self._snapshot_action
 
     def _find_ssh_key(self):

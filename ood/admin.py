@@ -2,8 +2,15 @@ from django.contrib import admin
 
 from . import models
 
-admin.site.register(models.OodInstance)
-admin.site.register(models.MineCraftServerSettings)
-admin.site.register(models.ServerPlayerState)
-admin.site.register(models.DropletState)
-admin.site.register(models.SimpleServerState)
+
+class OodAdminSite(admin.AdminSite):
+    site_title = 'OoD Site Administration'
+    site_header = 'OoD Administration'
+
+
+admin_site = OodAdminSite(name='oodadmin')
+admin_site.register(models.OodInstance)
+admin_site.register(models.MineCraftServerSettings)
+admin_site.register(models.ServerPlayerState)
+admin_site.register(models.DropletState)
+admin_site.register(models.SimpleServerState)
