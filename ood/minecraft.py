@@ -43,12 +43,12 @@ class Client(object):
             s = socket.create_connection((self.settings.ip_address,
                                           self.settings.port),
                                          timeout=5)
+        except socket.timeout:
+            return False
         except socket.error as e:
             if e.errno != errno.ECONNREFUSED:
                 logging.warning('Unexpected socket error when checking '
                                 'Minecraft port: %s' % e)
-            return False
-        except socket.timeout:
             return False
 
         s.close()
