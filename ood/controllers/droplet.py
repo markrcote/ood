@@ -102,7 +102,7 @@ class DropletController(object):
 
     def prune_snapshots(self):
         snapshots = self._get_snapshots()
-        for old_snapshot in snapshots[2:]:
+        for old_snapshot in snapshots[MAX_SNAPSHOTS_PER_INSTANCE:]:
             logging.info('Pruning old snapshot %s.' % old_snapshot.name)
             old_snapshot.destroy()
 
