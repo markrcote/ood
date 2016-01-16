@@ -2,9 +2,11 @@ import logging
 import os
 import time
 from operator import attrgetter
+from StringIO import StringIO
 
 import digitalocean
 from paramiko.client import AutoAddPolicy, SSHClient
+from paramiko.rsakey import RSAKey
 
 from ood.minecraft import Client
 from ood.models import DropletState
@@ -17,7 +19,6 @@ MINECRAFT_RCON_PORT = 25899
 # TODO: This should be in the database and configurable.
 DEFAULT_DATA_DIR = os.path.join(os.getenv('HOME'), '.ood')
 DROPLET_KEY_FILENAME = 'droplet_key'
-DROPLET_ROOT_SSH_KEY_FILENAME = 'ssh_key'
 RCON_PW_FILENAME = 'rcon_pw'
 
 
@@ -31,8 +32,6 @@ class DropletController(object):
             os.mkdir(self.data_dir)
 
         self.api_key_path = os.path.join(self.data_dir, DROPLET_KEY_FILENAME)
-        self.ssh_key_path = os.path.join(self.data_dir,
-                                         DROPLET_ROOT_SSH_KEY_FILENAME)
         self.rcon_pw_path = os.path.join(self.data_dir, RCON_PW_FILENAME)
 
         self._snapshot_action = None
@@ -189,10 +188,11 @@ class DropletController(object):
             self.droplet = None
 
     def _exec_ssh_cmd(self, cmdline):
+        pkey_buf = StringIO(self.state.pkey)
         client = SSHClient()
         client.set_missing_host_key_policy(AutoAddPolicy())
         client.connect(self.droplet_ip, username='root',
-                       key_filename=self.ssh_key_path)
+                       pkey=RSAKey.from_private_key(pkey_buf))
         stdin, stdout, stderr = client.exec_command(cmdline)
         for line in stdout:
             logging.info(line)

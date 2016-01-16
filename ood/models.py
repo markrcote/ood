@@ -60,6 +60,8 @@ class DropletState(models.Model):
     snapshot_action_id = models.IntegerField(null=True)
     droplet_ip_address = models.GenericIPAddressField(null=True)
     region = models.CharField(max_length=64, default='nyc3')
+    # Needs to be an RSA key at the moment.
+    pkey = models.TextField(null=True)
 
 
 class SimpleServerState(models.Model):
