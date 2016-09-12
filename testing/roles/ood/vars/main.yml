@@ -1,0 +1,14 @@
+---
+dependencies:
+  - erlang
+  - gcc
+  - git
+  - mariadb-server
+  - mysql-devel
+  - MySQL-python
+  - ncurses-devel
+  - ntp
+  - patch
+  - python-virtualenv
+  - rabbitmq-server
+  - supervisor

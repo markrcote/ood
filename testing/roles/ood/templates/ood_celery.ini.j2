@@ -1,0 +1,10 @@
+[program:{{ ood_celery_supervisor_name }}]
+command={{ ood_home }}/ood/venv/bin/celery -A ood worker -l info -B
+directory={{ ood_home }}/ood
+user={{ ood_user }}
+group={{ ood_group }}
+autostart=true
+autorestart=true
+stdout_logfile={{ ood_home }}/logs/celery_latest.log
+redirect_stderr=true
+environment=HOME="{{ ood_home }}",USER="{{ ood_user }}"

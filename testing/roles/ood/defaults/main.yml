@@ -1,0 +1,9 @@
+---
+ood_user: ood
+ood_group: ood
+ood_home: /srv/ood
+ood_repo: https://github.com/markrcote/ood
+ood_celery_supervisor_name: ood_celery
+
+# Make sure you override this in production.
+ood_secret_key: "=8d-io4ldb5(d(m&^by2)5(!(0gkrrbu@=ol2we896+qp#wn)u"

@@ -1,0 +1,94 @@
+---
+- name: Add EPEL repository
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: http://download.fedoraproject.org/pub/epel/7/x86_64/
+    gpgkey: https://muug.ca/mirror/fedora-epel/RPM-GPG-KEY-EPEL-7
+
+- name: Install dependencies.
+  yum:
+    name={{ item }}
+    state=present
+  with_items: "{{ dependencies }}"
+
+- name: Ensure NTP is running.
+  service:
+    name=ntpd
+    state=started
+    enabled=yes
+
+- name: Ensure RabbitMQ is running.
+  service:
+    name=rabbitmq-server
+    state=started
+    enabled=yes
+
+- name: Ensure MariaDB is running.
+  service:
+    name=mariadb
+    state=started
+    enabled=yes
+
+- name: create ood group
+  group:
+    state=present
+    name={{ ood_group }}
+    system=yes
+
+- name: create ood user
+  user:
+    state=present
+    name={{ ood_user }}
+    group={{ ood_group }}
+    home={{ ood_home }}
+
+- name: clone ood
+  git:
+    repo={{ ood_repo }}
+    dest={{ ood_home }}/ood
+  become: yes
+  become_user: "{{ ood_user }}"
+
+- name: create virtualenv and install dependencies
+  pip:
+    virtualenv={{ ood_home }}/ood/venv
+    requirements={{ ood_home }}/ood/requirements.txt
+  become: yes
+  become_user: "{{ ood_user }}"
+  notify:
+    - enable celery service
+
+- name: Create settings_local.py.
+  template:
+    src=settings_local.py.j2
+    dest={{ ood_home }}/ood/ood/settings_local.py
+    owner={{ ood_user }}
+    group={{ ood_group }}
+    mode=0644
+  notify:
+    - restart celery
+
+- include: supervisor.yml
+
+- name: Create database.
+  mysql_db:
+    name=ood
+    state=present
+
+- name: Create database user.
+  mysql_user:
+    name=ood
+    host=localhost
+    priv=ood.*:ALL
+    state=present
+
+- name: Migrate database.
+  django_manage:
+    app_path={{ ood_home }}/ood
+    virtualenv={{ ood_home }}/ood/venv
+    command=migrate
+  become: yes
+  become_user: "{{ ood_user }}"
+  notify:
+    - restart celery

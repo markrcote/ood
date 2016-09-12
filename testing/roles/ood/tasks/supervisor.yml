@@ -1,0 +1,24 @@
+---
+- name: start Supervisor
+  service:
+    name=supervisord
+    state=started
+    enabled=yes
+
+- name: configure Supervisor
+  template:
+    src=ood_celery.ini.j2
+    dest=/etc/supervisord.d/ood_celery.ini
+    owner=root
+    group=root
+    mode=0644
+  notify:
+    - restart celery
+
+- name: create log directory
+  file:
+    path={{ ood_home }}/logs
+    owner={{ ood_user }}
+    group={{ ood_group }}
+    mode=0755
+    state=directory

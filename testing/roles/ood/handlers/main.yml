@@ -1,0 +1,9 @@
+---
+- name: restart celery
+  supervisorctl:
+    name={{ ood_celery_supervisor_name }}
+    state=restarted
+
+- name: enable celery service
+  command: supervisorctl update
+  become: true
