@@ -30,44 +30,55 @@
     state=started
     enabled=yes
 
-- name: create ood group
+- name: Create ood group.
   group:
     state=present
     name={{ ood_group }}
     system=yes
 
-- name: create ood user
+- name: Create ood user.
   user:
     state=present
     name={{ ood_user }}
     group={{ ood_group }}
-    home={{ ood_home }}
+    home={{ ood_user_home }}
 
-- name: clone ood
-  git:
-    repo={{ ood_repo }}
-    dest={{ ood_home }}/ood
-  become: yes
-  become_user: "{{ ood_user }}"
+- name: Ensure proper ownership of ood home dir.
+  file:
+    state=directory
+    path={{ ood_home }}
+    owner={{ ood_user }}
+    group={{ ood_group }}
 
-- name: create virtualenv and install dependencies
+# FIXME: This should be performed only for production deploys.  In the
+# testing environment, the local source dir is mounted within the guest
+# Vagrant machine.
+#- name: clone ood
+#  git:
+#    repo={{ ood_repo }}
+#    dest={{ ood_home }}/ood
+#  become: yes
+#  become_user: "{{ ood_user }}"
+
+- name: Create virtualenv and install dependencies.
   pip:
-    virtualenv={{ ood_home }}/ood/venv
+    virtualenv={{ ood_home }}/venv
     requirements={{ ood_home }}/ood/requirements.txt
   become: yes
   become_user: "{{ ood_user }}"
   notify:
     - enable celery service
 
-- name: Create settings_local.py.
-  template:
-    src=settings_local.py.j2
-    dest={{ ood_home }}/ood/ood/settings_local.py
-    owner={{ ood_user }}
-    group={{ ood_group }}
-    mode=0644
-  notify:
-    - restart celery
+# FIXME: Also only needed for production deploys.
+#- name: Create settings_local.py.
+#  template:
+#    src=settings_local.py.j2
+#    dest={{ ood_home }}/ood/ood/settings_local.py
+#    owner={{ ood_user }}
+#    group={{ ood_group }}
+#    mode=0644
+#  notify:
+#    - restart celery
 
 - include: supervisor.yml
 
@@ -86,7 +97,7 @@
 - name: Migrate database.
   django_manage:
     app_path={{ ood_home }}/ood
-    virtualenv={{ ood_home }}/ood/venv
+    virtualenv={{ ood_home }}/venv
     command=migrate
   become: yes
   become_user: "{{ ood_user }}"

@@ -62,3 +62,5 @@ target/
 # OoD
 celerybeat-schedule
 ood/settings_local.py
+testing/.vagrant/
+testing/playbook.retry

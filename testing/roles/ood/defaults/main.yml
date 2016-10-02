@@ -1,6 +1,7 @@
 ---
 ood_user: ood
 ood_group: ood
+ood_user_home: /home/ood
 ood_home: /srv/ood
 ood_repo: https://github.com/markrcote/ood
 ood_celery_supervisor_name: ood_celery

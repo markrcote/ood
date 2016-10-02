@@ -5,6 +5,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   config.vm.hostname = "ood-serv"
   config.vm.network :private_network, ip: "192.168.60.4"
+  config.vm.network "forwarded_port", guest: 8000, host: 8000
+  config.vm.synced_folder "../", "/srv/ood/ood"
 
   # Provisioning configuration for Ansible.
   config.vm.provision "ansible" do |ansible|
