@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% if plus_id %}
 {% block scripts %}
 <script type="text/javascript"
         src="//code.jquery.com/jquery-1.11.2.min.js"></script>
@@ -30,6 +31,7 @@
   };
 </script>
 {% endblock %}
+{% endif %}
 
 {% block content %}
 <h4>Log in with your username and password</h4>
@@ -58,6 +60,7 @@
   </form>
 </div>
 
+{% if plus_id %}
 <h4>Or log in with Google+</h4>
 
 <div id="signinButtonContainer">
@@ -82,5 +85,6 @@
 
 <h5>If you have previously authorized Ore on Demand with Google, you are being
   automatically logged in now.</h5>
+{% endif %}
 
 {% endblock %}
