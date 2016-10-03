@@ -102,7 +102,6 @@ BROKER_URL = 'amqp://'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TIMEZONE = 'UTC'
 
 # Local settings trump any above.
 

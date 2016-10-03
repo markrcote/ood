@@ -54,7 +54,7 @@ class DropletController(object):
                                             name=self.state.name,
                                             region=self.state.region,
                                             image=snapshot.id,
-                                            size_slug='1gb',
+                                            size_slug='2gb',
                                             ssh_keys=[ssh_key])
         self.droplet.create()
 

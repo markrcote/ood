@@ -1,5 +1,5 @@
 [program:{{ ood_celery_supervisor_name }}]
-command={{ ood_home }}/venv/bin/celery -A ood worker -l info -B
+command={{ ood_home }}/venv/bin/celery -A ood worker -l info -B -s {{ ood_home }}/celerybeat-schedule
 directory={{ ood_home }}/ood
 user={{ ood_user }}
 group={{ ood_group }}
@@ -7,4 +7,4 @@ autostart=true
 autorestart=true
 stdout_logfile={{ ood_home }}/logs/celery_latest.log
 redirect_stderr=true
-environment=HOME="{{ ood_home }}",USER="{{ ood_user }}"
+environment=HOME="{{ ood_user_home }}",USER="{{ ood_user }}"
