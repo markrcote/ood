@@ -8,7 +8,7 @@
 </form>
 
 {% if can_delete %}
-    <a href="{% url 'delete_instance' instance.id %}" class="btn btn-default">Delete</a>
+    <a href="{% url 'delete_instance' instance.id %}" class="btn btn-danger">Delete</a>
 {% endif %}
 
 {% endblock %}
