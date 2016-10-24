@@ -1,9 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="{% url 'new_instance' %}" method="post">
+<form action="{{ form_dest }}" method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Submit" />
+    <input type="submit" value="Submit" class="btn btn-default"/>
 </form>
+
+{% if can_delete %}
+    <a href="{% url 'delete_instance' instance.id %}" class="btn btn-default">Delete</a>
+{% endif %}
+
 {% endblock %}

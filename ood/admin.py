@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from . import models
+from ood import models
 
 
 class OodAdminSite(admin.AdminSite):

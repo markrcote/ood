@@ -13,8 +13,6 @@ class OodInstance(models.Model):
         permissions = (
             ('can_start', 'Can start up server'),
             ('can_stop', 'Can stop the server'),
-            ('can_add', 'Can add new instances'),
-            ('can_edit', 'Can edit existing instances'),
         )
 
     name = models.CharField(max_length=64)

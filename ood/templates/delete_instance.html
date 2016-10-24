@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+Delete instance "{{ instance.name }}"?
+
+<form action="{% url 'delete_instance' instance.id %}" method="post">
+  {% csrf_token %}
+  <input type="submit" value="Yes" class="btn btn-default"/>
+</form>
+
+<a href="{% url 'edit_instance' instance.id %}" class="btn btn-default">No</a>
+
+{% endblock %}

@@ -14,8 +14,8 @@ from ood.tasks import stop as stop_server
 def main(request):
     can_start = request.user.has_perm('ood.can_start')
     can_stop = request.user.has_perm('ood.can_stop')
-    can_add = request.user.has_perm('ood.can_add')
-    can_edit = request.user.has_perm('ood.can_edit')
+    can_add = request.user.has_perm('add_oodinstance')
+    can_edit = request.user.has_perm('change_oodinstance')
 
     if request.user.is_authenticated and can_start:
         instances = OodInstance.objects.all()
@@ -81,7 +81,7 @@ def processing_stop(request, instance_id):
 
 
 @login_required
-@permission_required('ood.can_add')
+@permission_required('add_oodinstance')
 def new_instance(request):
     if request.method == 'POST':
         form = InstanceForm(request.POST)
@@ -115,12 +115,13 @@ def new_instance(request):
 
 
 @login_required
-@permission_required('ood.can_edit')
+@permission_required('change_oodinstance')
 def edit_instance(request, instance_id):
     instance = OodInstance.objects.get(pk=instance_id)
     server_settings = instance.minecraftserversettings
     droplet_state = instance.dropletstate
     url = reverse('edit_instance', args=(instance_id,))
+    can_delete = request.user.has_perm('delete_oodinstance')
 
     if request.method == 'POST':
         form = InstanceForm(request.POST)
@@ -153,4 +154,18 @@ def edit_instance(request, instance_id):
     return render(request, 'instance.html', {
         'form': form,
         'form_dest': url,
+        'instance': instance,
+        'can_delete': can_delete,
     })
+
+
+@login_required
+@permission_required('delete_oodinstance')
+def delete_instance(request, instance_id):
+    instance = OodInstance.objects.get(pk=instance_id)
+
+    if request.method == 'POST':
+        instance.delete()
+        return redirect(reverse('main'))
+
+    return render(request, 'delete_instance.html', {'instance': instance})
