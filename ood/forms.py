@@ -1,7 +1,7 @@
 from django import forms
 
 
-class NewInstanceForm(forms.Form):
+class InstanceForm(forms.Form):
     port = forms.IntegerField(min_value=1)
     rcon_port = forms.IntegerField(min_value=1)
     rcon_password = forms.CharField(min_length=8)

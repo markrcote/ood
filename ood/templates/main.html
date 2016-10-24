@@ -16,6 +16,9 @@
       {% if can_start %}
         <a href="{% url 'wakeup' instance.id %}" class="btn btn-default">Wake up</a>
       {% endif %}
+      {% if can_edit %}
+        <a href="{% url 'edit_instance' instance.id %}" class="btn btn-default">Edit</a>
+      {% endif %}
     {% elif instance.state == 'running' %}
       <p>
         The server is running on
