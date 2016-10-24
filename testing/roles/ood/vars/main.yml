@@ -3,6 +3,7 @@ dependencies:
   - erlang
   - gcc
   - git
+  - libffi-devel
   - mariadb-server
   - mysql-devel
   - MySQL-python
