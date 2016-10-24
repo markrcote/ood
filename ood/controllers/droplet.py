@@ -19,7 +19,6 @@ MINECRAFT_RCON_PORT = 25899
 # TODO: This should be in the database and configurable.
 DEFAULT_DATA_DIR = os.path.join(os.getenv('HOME'), '.ood')
 DROPLET_KEY_FILENAME = 'droplet_key'
-RCON_PW_FILENAME = 'rcon_pw'
 
 
 class DropletController(object):
@@ -32,7 +31,6 @@ class DropletController(object):
             os.mkdir(self.data_dir)
 
         self.api_key_path = os.path.join(self.data_dir, DROPLET_KEY_FILENAME)
-        self.rcon_pw_path = os.path.join(self.data_dir, RCON_PW_FILENAME)
 
         self._snapshot_action = None
         self._droplet_ip = None
@@ -177,11 +175,8 @@ class DropletController(object):
                 if self.state.droplet_ip_address != self.droplet_ip:
                     self.state.droplet_ip_address = self.droplet_ip
                     self.state.save()
-                    self.mcc.update_host(
+                    self.mcc.update_ip_address(
                         self.state.droplet_ip_address,
-                        MINECRAFT_PORT,
-                        MINECRAFT_RCON_PORT,
-                        file(self.rcon_pw_path).read().strip()
                     )
                 break
         else:

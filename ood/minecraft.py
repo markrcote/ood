@@ -28,11 +28,8 @@ class Client(object):
         self.player_state, _ = ServerPlayerState.objects.get_or_create(
             ood=ood_instance)
 
-    def update_host(self, ip_address, port, rcon_port, rcon_password):
+    def update_ip_address(self, ip_address):
         self.settings.ip_address = ip_address
-        self.settings.port = port
-        self.settings.rcon_port = rcon_port
-        self.settings.rcon_password = rcon_password
         self.settings.save()
 
     def port_open(self):

@@ -3,7 +3,9 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 
-from ood.models import OodInstance
+from ood.forms import NewInstanceForm
+from ood.models import DropletState, MineCraftServerSettings, OodInstance
+from ood.states import droplet as droplet_states
 from ood.tasks import start as start_server
 from ood.tasks import stop as stop_server
 
@@ -72,3 +74,33 @@ def processing_stop(request, instance_id):
         })
     else:
         return redirect(reverse('main'))
+
+
+@login_required
+def new_instance(request):
+    if request.method == 'POST':
+        form = NewInstanceForm(request.POST)
+        if form.is_valid():
+            instance = OodInstance.objects.create(
+                name=form.cleaned_data['name'],
+                server_type=OodInstance.DROPLET_SERVER,
+                state=droplet_states.Archived.name,
+            )
+            MineCraftServerSettings.objects.create(
+                ood=instance,
+                port=form.cleaned_data['port'],
+                rcon_port=form.cleaned_data['rcon_port'],
+                rcon_password=form.cleaned_data['rcon_password'],
+            )
+            DropletState.objects.create(
+                ood=instance,
+                name=form.cleaned_data['name'],
+                region=form.cleaned_data['region'],
+                pkey=form.cleaned_data['pkey'],
+            )
+
+            return redirect(reverse('main'))
+    else:
+        form = NewInstanceForm()
+
+    return render(request, 'new_instance.html', {'form': form})

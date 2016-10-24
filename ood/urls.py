@@ -20,5 +20,6 @@ urlpatterns = [
         name='processing_start'),
     url(r'^processing_stop/([0-9]+)/$', views.processing_stop,
         name='processing_stop'),
+    url(r'^new_instance/$', views.new_instance, name='new_instance'),
     url(r'^admin/', include(admin.admin_site.urls)),
 ]
