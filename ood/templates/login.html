@@ -42,7 +42,7 @@
   {% endif %}
 
   <form method="post"
-        action="{% url 'django.contrib.auth.views.login' %}">
+        action="{% url 'login' %}">
     {% csrf_token %}
     <table>
       <tr>

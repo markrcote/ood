@@ -24,5 +24,5 @@ urlpatterns = [
     url(r'^instance/([0-9]+)/$', views.edit_instance, name='edit_instance'),
     url(r'^instance/([0-9]+)/delete/$', views.delete_instance,
         name='delete_instance'),
-    url(r'^admin/', include(admin.admin_site.urls)),
+    url(r'^admin/', admin.admin_site.urls),
 ]
