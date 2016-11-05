@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 
 from ood import models
 
@@ -14,3 +15,4 @@ admin_site.register(models.MineCraftServerSettings)
 admin_site.register(models.ServerPlayerState)
 admin_site.register(models.DropletState)
 admin_site.register(models.SimpleServerState)
+admin_site.register(User)
